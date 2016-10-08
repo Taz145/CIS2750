@@ -211,7 +211,7 @@ int processStrings (struct dataHeader *header) {
 
         temp = temp->next;
     }
-    //pyFormatting(header);
+    pyFormatting(header);
     return SUCCESS;
 }
 
@@ -321,9 +321,10 @@ static void removeNewLines (struct dataHeader *header) {
     struct dataString *list = header->next;
     struct dataString *nextString = list->next;
     char *tempString;
-    bool prevString = false;
+    bool prevString = false, currString = false;
     while (nextString != NULL) {
         i = k = 0;
+        currString = false;
         if (strlen(list->string) == 0) {
             list = nextString;
             nextString = nextString->next;
@@ -347,12 +348,16 @@ static void removeNewLines (struct dataHeader *header) {
             }
         }
         //if the beginning of the next string is whitespace, keep going until it's not
-        while (nextString->string[i] == 32 || nextString->string[i] == 9) {
+        while (nextString->string[i] == 32 || nextString->string[i] == 9
+                || nextString->string[i] == 10 || nextString->string[i] == 13) {
+            if (nextString->string[i] == 10 || nextString->string[i] == 13) {
+                currString = true;
+            }
             i++;
         }
-        if (prevString && (nextString->string[i] == 10 || nextString->string[i] == 13)) {
+        if (prevString && currString) {
             tempString = malloc(sizeof(char) * strlen(nextString->string) - i + 1);
-            for (i = i + 1; i < strlen(nextString->string) + 1; i++ ) {
+            for (; i < strlen(nextString->string) + 1; i++ ) {
                 tempString[k++] = nextString->string[i];
             }
             nextString->string = realloc(nextString->string, sizeof(char) * strlen(tempString) + 1);
@@ -374,7 +379,7 @@ static void removeNewLines (struct dataHeader *header) {
 static void pyFormatting (struct dataHeader *header) {
     char BUFF[MAX_BUFF];
     char pyPath[] = "./html-formating.py";
-    char *command = malloc(sizeof(char) * strlen(pyPath) + strlen(header->name)+ 1);
+    char *command = malloc(sizeof(char) * strlen(pyPath) + strlen(header->name) + 1);
     strcat(command, pyPath);
     strcat(command, header->name);
     FILE *fifo;
@@ -389,9 +394,9 @@ static void pyFormatting (struct dataHeader *header) {
         while (list != NULL) {
             fprintf(fifo, "%s", list->string);
             list = list->next;
-         }
+        }
         fclose(fifo);
-        
+
         mkfifo("q2", 0666);
         fifo = fopen("q2", "r");
         while (fscanf(fifo, "%s", BUFF) == 1) {
