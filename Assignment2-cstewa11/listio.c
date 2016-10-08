@@ -211,7 +211,7 @@ int processStrings (struct dataHeader *header) {
 
         temp = temp->next;
     }
-    pyFormatting(header);
+    // pyFormatting(header);
     return SUCCESS;
 }
 

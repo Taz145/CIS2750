@@ -7,7 +7,8 @@ import re
 def reader():
     try:
         os.mkfifo("q1")
-    except OSError:
+    # ignore exception if the pipe already exists
+    except FileExistsError:
         pass
     text = []
     fifo = open("q1", "r")
@@ -24,30 +25,36 @@ def writer(text):
         fifo.write(line)
     fifo.close()
 
-def main(filename):
-    text = reader();
-    strInfo = []
-    file = open(filename + ".info")
-    for line in file:
-        line = line.rstrip('\n')
-        # add the tag and the target as a tuple to a list
-        strInfo.append(tuple(line.split(" ", 1)))
-    file.close()
 
-    # sorts by longest strings so the tags don't mess up replacements later
-    strInfo = sorted(strInfo, key=lambda tup: tup[1])
+def main(filename):
+    text = reader()
     title = text[0]
     body = text[1]
-    for info in strInfo:
-        replace = "<" + info[0] + ">" + info[1] + "</" + info[0] + ">"
-        body = re.sub(r"\b" + re.escape(info[1]) + r"\b", replace, body)
+    strInfo = []
+    try:
+        file = open(filename + ".info")
+        # If file can't be found continue without style formatting
+    except FileNotFoundError:
+        print(filename + ".info couldn't be found.\n")
+    else:
+        for line in file:
+            line = line.rstrip('\n')
+            # add the tag and the target as a tuple to a list
+            strInfo.append(tuple(line.split(" ", 1)))
+        file.close()
+
+        # sorts by longest strings so the tags don't mess up replacements later
+        strInfo = sorted(strInfo, key=lambda tup: tup[1])
+        for info in strInfo:
+            replace = "<" + info[0] + ">" + info[1] + "</" + info[0] + ">"
+            body = re.sub(r"\b" + re.escape(info[1]) + r"\b", replace, body)
 
     body = "<HTML>\n<HEAD>\n<TITLE>\n" \
         + title + "</TITLE>\n</HEAD>\n<BODY>\n" \
         + title + body + \
         "\n</BODY>\n</HTML>\n"
     writer(body)
-    sys.exit(0)
+
 
 if __name__ == '__main__':
     main(sys.argv[1])

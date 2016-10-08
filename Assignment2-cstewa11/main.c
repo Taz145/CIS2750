@@ -9,6 +9,12 @@ int main (int argc, char **argv) {
         return (FAILURE);
     }
     char * filename = argv[1];
+    char BUFF[MAX_BUFF];
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        printf("Couldn't open the file. Does it exist?\n");
+        return FAILURE;
+    }
     struct returnStruct *rtn;
     rtn = buildHeader();
     if (rtn->value == FAILURE) {
@@ -16,9 +22,10 @@ int main (int argc, char **argv) {
         return (FAILURE);
     }
     setName(rtn->header, filename);
-    addString(rtn->header, "\ntest\n\0");
-    addString(rtn->header, "\n   \nThis is a test String\0");
-    addString(rtn->header, "\nanother   test      String\0");
+    while (fgets(BUFF, MAX_BUFF, file) != NULL) {
+        addString(rtn->header, BUFF);
+    }
+    fclose(file);
     processStrings(rtn->header);
     printString(rtn->header);
     freeStructure(rtn->header);
