@@ -1,5 +1,6 @@
 #include "listio.h"
 
+#define MAX_BUFF 1024
 /* Helper function to processStrings()
  * Will remove all but 1 of the specifed character, char toRemove.
  * The characters must be sequential
@@ -24,9 +25,8 @@ static char *parseNewLines(char *oldString);
  */
 static void removeNewLines(struct dataHeader *header);
 
-static void writeFIFO(struct dataHeader *header);
+static void pyFormatting(struct dataHeader *header);
 
-static void readFIFO();
 
 
 /*
@@ -211,10 +211,7 @@ int processStrings (struct dataHeader *header) {
 
         temp = temp->next;
     }
-    //Call the python program
-    writeFIFO(header);
-    system("python html-formating.py sample");
-    readFIFO();
+    //pyFormatting(header);
     return SUCCESS;
 }
 
@@ -350,13 +347,12 @@ static void removeNewLines (struct dataHeader *header) {
             }
         }
         //if the beginning of the next string is whitespace, keep going until it's not
-        while (nextString->string[i] == 32 || nextString->string[i] == 9
-                || nextString->string[i] == 10 || nextString->string[i] == 13) {
+        while (nextString->string[i] == 32 || nextString->string[i] == 9) {
             i++;
         }
-        if (prevString) {
+        if (prevString && (nextString->string[i] == 10 || nextString->string[i] == 13)) {
             tempString = malloc(sizeof(char) * strlen(nextString->string) - i + 1);
-            for (; i < strlen(nextString->string) + 1; i++ ) {
+            for (i = i + 1; i < strlen(nextString->string) + 1; i++ ) {
                 tempString[k++] = nextString->string[i];
             }
             nextString->string = realloc(nextString->string, sizeof(char) * strlen(tempString) + 1);
@@ -375,30 +371,37 @@ static void removeNewLines (struct dataHeader *header) {
     }
 }
 
-static void writeFIFO (struct dataHeader *header) {
-    mkfifo("q1", 0666);
+static void pyFormatting (struct dataHeader *header) {
+    char BUFF[MAX_BUFF];
+    char pyPath[] = "./html-formating.py";
+    char *command = malloc(sizeof(char) * strlen(pyPath) + strlen(header->name)+ 1);
+    strcat(command, pyPath);
+    strcat(command, header->name);
     FILE *fifo;
     struct dataString *list = header->next;
-    fifo = fopen("q1", "w");
-    fprintf(fifo, "%s\n", header->name);
-    while (list != NULL) {
-        fprintf(fifo, "%s\n", list->string);
-        list = list->next;
+    pid_t pid;
+    pid = fork();
+    if (pid == 0) {
+        system("./html-formating.py sample");
+    } else {
+        fifo = fopen("q1", "w");
+        fprintf(fifo, "%s\n", header->name);
+        while (list != NULL) {
+            fprintf(fifo, "%s", list->string);
+            list = list->next;
+         }
+        fclose(fifo);
+        
+        mkfifo("q2", 0666);
+        fifo = fopen("q2", "r");
+        while (fscanf(fifo, "%s", BUFF) == 1) {
+            printf("%s\n", BUFF);
+        }
+        fclose(fifo);
+        remove("q2");
     }
-    fclose(fifo);
+    free(command);
 }
-
-static void readFIFO() {
-    FILE *fifo;
-    char buff[1024];
-    fifo = fopen("q2", "r");
-    while ( fgets(buff, sizeof(buff), fifo) != NULL) {
-        printf("%s\n", buff);
-    }
-    fclose(fifo);
-    remove("q2");
-}
-
 /*
  * Frees up all allocated memory in the list
  * Destroys the list passed so only use when done with that list
