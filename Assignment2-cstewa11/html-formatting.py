@@ -13,7 +13,8 @@ def reader():
     text = []
     fifo = open("q1", "r")
     text.append(fifo.readline())
-    text.append(fifo.read())
+    for line in fifo:
+        text.append(line)
     fifo.close()
     os.unlink("q1")
     return text
@@ -21,16 +22,15 @@ def reader():
 
 def writer(text):
     fifo = open("q2", "w")
-    for line in text:
-        fifo.write(line)
+    fifo.write(text)
     fifo.close()
 
 
 def main(filename):
     text = reader()
     title = text[0]
-    body = text[1]
     strInfo = []
+
     try:
         file = open(filename + ".info")
         # If file can't be found continue without style formatting
@@ -47,8 +47,9 @@ def main(filename):
         strInfo = sorted(strInfo, key=lambda tup: tup[1])
         for info in strInfo:
             replace = "<" + info[0] + ">" + info[1] + "</" + info[0] + ">"
-            body = re.sub(r"\b" + re.escape(info[1]) + r"\b", replace, body)
-
+            text[1]  = re.sub(re.escape(info[1]) + r"\b", replace, text[1])
+            
+    body = text[1]
     body = "<HTML>\n<HEAD>\n<TITLE>\n" \
         + title + "</TITLE>\n</HEAD>\n<BODY>\n" \
         + title + body + \
@@ -58,3 +59,4 @@ def main(filename):
 
 if __name__ == '__main__':
     main(sys.argv[1])
+

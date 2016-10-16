@@ -27,7 +27,6 @@ int main (int argc, char **argv) {
     }
     fclose(file);
     processStrings(rtn->header);
-    printString(rtn->header);
     freeStructure(rtn->header);
     free(rtn);
     return (SUCCESS);

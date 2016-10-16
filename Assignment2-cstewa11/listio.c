@@ -212,6 +212,7 @@ int processStrings (struct dataHeader *header) {
         temp = temp->next;
     }
     // pyFormatting(header);
+    pyFormatting(header);
     return SUCCESS;
 }
 
@@ -378,8 +379,8 @@ static void removeNewLines (struct dataHeader *header) {
 
 static void pyFormatting (struct dataHeader *header) {
     char BUFF[MAX_BUFF];
-    char pyPath[] = "./html-formating.py";
-    char *command = malloc(sizeof(char) * strlen(pyPath) + strlen(header->name) + 1);
+    char pyPath[] = "./html-formatting.py ";
+    char *command = calloc(1,sizeof(char) * strlen(pyPath) + strlen(header->name) + 2);
     strcat(command, pyPath);
     strcat(command, header->name);
     FILE *fifo;
@@ -387,7 +388,7 @@ static void pyFormatting (struct dataHeader *header) {
     pid_t pid;
     pid = fork();
     if (pid == 0) {
-        system("./html-formating.py sample");
+        system(command);
     } else {
         fifo = fopen("q1", "w");
         fprintf(fifo, "%s\n", header->name);
@@ -399,7 +400,7 @@ static void pyFormatting (struct dataHeader *header) {
 
         mkfifo("q2", 0666);
         fifo = fopen("q2", "r");
-        while (fscanf(fifo, "%s", BUFF) == 1) {
+        while (fscanf(fifo, "%s ", BUFF) == 1) {
             printf("%s\n", BUFF);
         }
         fclose(fifo);
