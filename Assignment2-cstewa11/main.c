@@ -8,9 +8,20 @@ int main (int argc, char **argv) {
         printf("Please add the filename and run again\n");
         return (FAILURE);
     }
-    char * filename = argv[1];
+    char * filename = malloc(sizeof(argv[1]) + sizeof(".html") + 1);
+    strcat(filename, argv[1]);
+    strcat(filename, ".html");
     char BUFF[MAX_BUFF];
-    FILE *file = fopen(filename, "r");
+    FILE *file;
+    file = fopen(filename, "r");
+    if (file != NULL) {
+        while (fgets(BUFF, MAX_BUFF, file) != NULL) {
+            printf("%s", BUFF);
+        }
+        return SUCCESS;
+    }
+    fclose(file);
+    file = fopen(argv[1], "r");
     if (file == NULL) {
         printf("Couldn't open the file. Does it exist?\n");
         return FAILURE;
