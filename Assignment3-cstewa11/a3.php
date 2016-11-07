@@ -19,7 +19,7 @@ if($dh = opendir($dir)) {
                     $files[] = $file;
                 } else {
                     $htmlFiles[] = $file;
-                } 
+                }
             }
         }
     }

@@ -380,7 +380,7 @@ static void removeNewLines (struct dataHeader *header) {
 
 static void pyFormatting (struct dataHeader *header) {
     char pyPath[] = "./a3.py ";
-    char *command = calloc(1,sizeof(char) * strlen(pyPath) + strlen(header->name) + 2);
+    char *command = calloc(1, sizeof(char) * strlen(pyPath) + strlen(header->name) + 2);
     strcat(command, pyPath);
     strcat(command, header->name);
     FILE *fifo;

@@ -21,7 +21,7 @@ def reader():
 
 
 def writer(text, filename):
-    html = open(filename +".html", "w")
+    html = open(filename + ".html", "w")
     html.write(text)
     html.close()
 
@@ -47,7 +47,7 @@ def main(filename):
         strInfo = sorted(strInfo, key=lambda tup: tup[1])
         for info in strInfo:
             replace = "<" + info[0] + ">" + info[1] + "</" + info[0] + ">"
-            text[1]  = re.sub(re.escape(info[1]) + r"\b", replace, text[1])
+            text[1] = re.sub(re.escape(info[1]) + r"\b", replace, text[1])
 
     body = text[1]
     body = "<HTML>\n<HEAD>\n<TITLE>\n" \
@@ -59,4 +59,3 @@ def main(filename):
 
 if __name__ == '__main__':
     main(sys.argv[1])
-
