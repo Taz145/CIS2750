@@ -8,9 +8,10 @@ int main (int argc, char **argv) {
         printf("Please add the filename and run again\n");
         return (FAILURE);
     }
-    char * filename = malloc(sizeof(argv[1]) + sizeof(".html") + 1);
+    char * filename = calloc(1, sizeof(char) * strlen(argv[1]) + strlen(".html") + 1);
     strcat(filename, argv[1]);
     strcat(filename, ".html");
+
     char BUFF[MAX_BUFF];
     FILE *file;
     file = fopen(filename, "r");
@@ -18,9 +19,10 @@ int main (int argc, char **argv) {
         while (fgets(BUFF, MAX_BUFF, file) != NULL) {
             printf("%s", BUFF);
         }
+        fclose(file);
+        free(filename);
         return SUCCESS;
     }
-    fclose(file);
     file = fopen(argv[1], "r");
     if (file == NULL) {
         printf("Couldn't open the file. Does it exist?\n");
@@ -32,7 +34,7 @@ int main (int argc, char **argv) {
         printf("Error on buildHeader(). Exiting\n");
         return (FAILURE);
     }
-    setName(rtn->header, filename);
+    setName(rtn->header, argv[1]);
     while (fgets(BUFF, MAX_BUFF, file) != NULL) {
         addString(rtn->header, BUFF);
     }
@@ -40,5 +42,6 @@ int main (int argc, char **argv) {
     processStrings(rtn->header);
     freeStructure(rtn->header);
     free(rtn);
+    free(filename);
     return (SUCCESS);
 }

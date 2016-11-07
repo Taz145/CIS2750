@@ -211,7 +211,6 @@ int processStrings (struct dataHeader *header) {
 
         temp = temp->next;
     }
-    // pyFormatting(header);
     pyFormatting(header);
     return SUCCESS;
 }
@@ -324,7 +323,8 @@ static void removeNewLines (struct dataHeader *header) {
     char *tempString;
     bool prevString = false, currString = false;
     while (nextString != NULL) {
-        i = k = 0;
+        k = 0;
+        i = 1;
         currString = false;
         if (strlen(list->string) == 0) {
             list = nextString;
@@ -333,10 +333,12 @@ static void removeNewLines (struct dataHeader *header) {
                 return;
             }
         }
+        //while whitespace keep going back
         while (list->string[strlen(list->string) - i] == 32 || list->string[strlen(list->string) - i] == 9
                 || list->string[strlen(list->string) - i] == '\0') {
             i++;
         }
+        //if newline set prevString flag to true
         if (list->string[strlen(list->string) - i] == 10 || list->string[strlen(list->string) - i] == 13) {
             prevString = true;
         }
@@ -361,7 +363,8 @@ static void removeNewLines (struct dataHeader *header) {
             for (; i < strlen(nextString->string) + 1; i++ ) {
                 tempString[k++] = nextString->string[i];
             }
-            nextString->string = realloc(nextString->string, sizeof(char) * strlen(tempString) + 1);
+            free(nextString->string);
+            nextString->string = calloc(1, sizeof(char) * strlen(tempString) + 1);
             strcpy(nextString->string, tempString);
             free(tempString);
             list->string = realloc(list->string, sizeof(char) * strlen(list->string) + 2);

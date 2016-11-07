@@ -20,10 +20,14 @@ def reader():
     return text
 
 
-def writer(text):
+def writer(text, filename):
     fifo = open("q2", "w")
     fifo.write(text)
     fifo.close()
+
+    html = open(filename +".html", "w")
+    html.write(text)
+    html.close()
 
 
 def main(filename):
@@ -48,13 +52,13 @@ def main(filename):
         for info in strInfo:
             replace = "<" + info[0] + ">" + info[1] + "</" + info[0] + ">"
             text[1]  = re.sub(re.escape(info[1]) + r"\b", replace, text[1])
-            
+
     body = text[1]
     body = "<HTML>\n<HEAD>\n<TITLE>\n" \
         + title + "</TITLE>\n</HEAD>\n<BODY>\n" \
         + title + body + \
         "\n</BODY>\n</HTML>\n"
-    writer(body)
+    writer(body, filename)
 
 
 if __name__ == '__main__':
