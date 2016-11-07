@@ -137,7 +137,7 @@ int addString(struct dataHeader *header, char *str) {
         return FAILURE;
     }
     strcpy(new->string, str);
-
+    new->string[strlen(str)] = '\0';
     endOfList = header->next;
     //checks if there are any existing dataStrings in the list already
     if (endOfList == NULL) {
@@ -324,7 +324,7 @@ static void removeNewLines (struct dataHeader *header) {
     bool prevString = false, currString = false;
     while (nextString != NULL) {
         k = 0;
-        i = 1;
+        i = 0;
         currString = false;
         if (strlen(list->string) == 0) {
             list = nextString;
@@ -333,14 +333,11 @@ static void removeNewLines (struct dataHeader *header) {
                 return;
             }
         }
-        //while whitespace keep going back
-        while (list->string[strlen(list->string) - i] == 32 || list->string[strlen(list->string) - i] == 9
-                || list->string[strlen(list->string) - i] == '\0') {
-            i++;
-        }
-        //if newline set prevString flag to true
-        if (list->string[strlen(list->string) - i] == 10 || list->string[strlen(list->string) - i] == 13) {
-            prevString = true;
+        for (i = 0; i < strlen(list->string) + 1; ++i) {
+            //if newline set prevString flag to true
+            if (list->string[strlen(list->string) - i] == 10 || list->string[strlen(list->string) - i] == 13) {
+                prevString = true;
+            }
         }
 
         i = 0;
@@ -363,13 +360,14 @@ static void removeNewLines (struct dataHeader *header) {
             for (; i < strlen(nextString->string) + 1; i++ ) {
                 tempString[k++] = nextString->string[i];
             }
-            free(nextString->string);
-            nextString->string = calloc(1, sizeof(char) * strlen(tempString) + 1);
+            //nextString->string = realloc(nextString->string, sizeof(char) * strlen(tempString) + 3);
             strcpy(nextString->string, tempString);
             free(tempString);
             list->string = realloc(list->string, sizeof(char) * strlen(list->string) + 2);
             strcat(list->string, "\n\0");
         }
+        //if nextString is zero length move nextString but not list
+        //as to skip over the zero length string
         if (strlen(nextString->string) == 0) {
             nextString = nextString->next;
         } else {

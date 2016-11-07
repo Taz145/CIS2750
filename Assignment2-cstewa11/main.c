@@ -36,7 +36,9 @@ int main (int argc, char **argv) {
     }
     setName(rtn->header, argv[1]);
     while (fgets(BUFF, MAX_BUFF, file) != NULL) {
-        addString(rtn->header, BUFF);
+        if(strlen(BUFF) != 0) {
+            addString(rtn->header, BUFF);
+        }
     }
     fclose(file);
     processStrings(rtn->header);
